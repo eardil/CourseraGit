@@ -1,4 +1,3 @@
-library(shiny)
 library(dplyr)
 library(ggplot2)
 library(leaflet)
@@ -11,8 +10,13 @@ hur <- read.csv(file = "hurdataLL.csv")
 shinyServer(function(input, output){
   huranioTemp <- reactive({
     filter(hur,floor(Date/10000)==input$yearH)
+    # hur[floor(hur$Date/10000)==input$yearH & (hur$Name == input$nameH | "ALL" == input$nameH),]
   })
-
+  
+#   huranioTemp <- reactive({
+#     huranioTemp1()[huranioTemp1()$Name == input$nameH | "ALL"==input$nameH]
+#   })
+  
   
   output$mapa <- renderLeaflet({leaflet(hur) %>% addTiles() %>%
       fitBounds(~min(-filter(hur,floor(Date/10000)==2014)$Lo),
@@ -24,7 +28,6 @@ shinyServer(function(input, output){
   observe({
     
     huranio <- huranioTemp() %>% mutate(DateNum = Hour/2300 + Date-min(Date))
-    # huranio <- huranio[huranio$Name == input$nameH | "ALL" == input$nameH,]
     
     alpha <- lapply(unique(huranio$Name), function(x) data.frame(alpha =
                (huranio[huranio$Name==x,]$DateNum-min(huranio[huranio$Name==x,]$DateNum))/
@@ -54,12 +57,13 @@ shinyServer(function(input, output){
                        fill=FALSE,
                        radius = huranio$Maxwind/7
       )
+    
     })
   
   observe({output$names <- renderUI({
     selectInput(inputId = "nameH",label = "Hurricane Name",choices = as.list(c("ALL",as.character(unique(huranioTemp()$Name)))),
-                selected = "ALL")})
-  })
+                selected = "ALL")
+  })})
   
   output$anio <- renderText(paste("Hurricanes from ",as.character(year)))
   

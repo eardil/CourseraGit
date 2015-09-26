@@ -1,8 +1,11 @@
 library(dplyr)
 library(ggplot2)
 library(leaflet)
+library(markdown)
 
 hur <- read.csv(file = "hurdataLL.csv")
+hur <- filter(hur,Date>=19550000) %>% mutate(Color=Name,alpha=0)
+colH <- hur$Name
 
 
 
@@ -13,11 +16,16 @@ shinyServer(function(input, output){
     # hur[floor(hur$Date/10000)==input$yearH & (hur$Name == input$nameH | "ALL" == input$nameH),]
   })
   
-#   huranioTemp <- reactive({
-#     huranioTemp1()[huranioTemp1()$Name == input$nameH | "ALL"==input$nameH]
-#   })
+
+  colH <- reactive({
+    if(!is.null(input$nameH)) {
+    if(!is.null(input$nameH) && input$nameH == "ALL") {aaa<-huranioTemp()$Name}
+    else {aaa<-huranioTemp()$Name
+          aaa[aaa!=input$nameH]<-NA}
+    return(aaa)}
+  })
   
-  
+
   output$mapa <- renderLeaflet({leaflet(hur) %>% addTiles() %>%
       fitBounds(~min(-filter(hur,floor(Date/10000)==2014)$Lo),
                 ~min(filter(hur,floor(Date/10000)==2014)$Lat),
@@ -28,19 +36,23 @@ shinyServer(function(input, output){
   observe({
     
     huranio <- huranioTemp() %>% mutate(DateNum = Hour/2300 + Date-min(Date))
-    
-    alpha <- lapply(unique(huranio$Name), function(x) data.frame(alpha =
+    huranio$Color <- colH()
+
+    huranio$alpha <- lapply(unique(huranio$Name), function(x) 
+            # if(!is.null(input$nameH) && (input$nameH == "ALL" || input$nameH == x)) 
+              {data.frame(alpha =
                (huranio[huranio$Name==x,]$DateNum-min(huranio[huranio$Name==x,]$DateNum))/
-                (max(huranio[huranio$Name==x,]$DateNum)-min(huranio[huranio$Name==x,]$DateNum)))) %>% rbind_all
+                (max(huranio[huranio$Name==x,]$DateNum)-min(huranio[huranio$Name==x,]$DateNum)))}
+            # else{data.frame(alpha=as.data.frame(matrix(0,ncol=1,nrow = sum(huranio$Name==x))))}
+            ) %>% rbind_all
     
-    huranio <- cbind(huranio,alpha)
     pal <- colorFactor(palette = rainbow(length(levels(huranio$Name))),levels=levels(huranio$Name))
     leafletProxy("mapa") %>% 
       clearMarkers() %>%
       addCircleMarkers(lng=-huranio$Lo,
                      lat=huranio$Lat,
                      stroke= F,
-                     fillColor=pal(huranio$Name),
+                     fillColor=pal(huranio$Color),
                      fillOpacity = huranio$alpha,
                      radius = huranio$Maxwind/7,
                      popup=paste(
@@ -65,6 +77,10 @@ shinyServer(function(input, output){
                 selected = "ALL")
   })})
   
-  output$anio <- renderText(paste("Hurricanes from ",as.character(year)))
+#   observe({output$tabla <- renderDataTable({
+#     as.data.frame(colH())
+#   })})
+  
+  # output$anio <- renderText(paste("Hurricanes from ",as.character(year)))
   
 })

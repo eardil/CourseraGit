@@ -2,13 +2,15 @@ Hurricanes
 ========================================================
 author: Irving Simonin W
 date: September 28, 2015
+font-family: 'Helvetica'
+transition: zoom
 
 The problem
 ========================================================
 
 Every year, the hurricane season brings new challenges and even fears to those who live in high risk areas.
 
-One of the crucial needs in every civil protection plan is prevention, which requires knowledge over past events and how to prevent and mitigate loss. 
+One of the crucial needs in every civil protection plan is prevention, which requires knowledge over past events to prevent and mitigate loss. 
 ***
 ![Hurricane yeah](Hurricanes-figure/hurricane_depth.jpg)
 
@@ -29,7 +31,7 @@ The [hurdat2](http://www.nhc.noaa.gov/data/hurdat/hurdat2-format-atlantic.pdf)* 
 * Position
 * Pressure
 
-*You can see more on the National Hurricane Center on their [main page](http://www.nhc.noaa.gov/).
+<small>*You can see more on the National Hurricane Center on their [main page](http://www.nhc.noaa.gov/).</small>
 
 ***
 
